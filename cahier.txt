@@ -1,0 +1,1251 @@
+# CAHIER DES CHARGES FONCTIONNEL ET TECHNIQUE
+## Plateforme de micro-tâches rémunérées avec abonnements VIP
+
+**Version :** 1.0  
+**Technologie principale :** Laravel / PHP  
+**Frontend :** Blade, HTML5, CSS3, JavaScript natif  
+**Base de données :** PostgreSQL  
+**Devise :** Franc CFA (XOF)  
+**Marché initial :** Côte d'Ivoire  
+**Interfaces :** Worker, Partenaire, Administrateur
+
+---
+
+# 1. PRÉSENTATION DU PROJET
+
+## 1.1. Contexte
+
+Le projet consiste à développer une plateforme web permettant aux utilisateurs, appelés *workers*, d'effectuer des micro-tâches numériques rémunérées.
+
+Ces tâches sont proposées et financées par des entreprises partenaires qui souhaitent obtenir des prestations telles que :
+
+- Visiter et tester des sites web.
+- Consulter et évaluer des fiches produits.
+- Répondre à des questionnaires.
+- Tester des fonctionnalités numériques.
+- Vérifier des informations commerciales.
+- Fournir des retours d'expérience authentiques.
+- Réaliser d'autres missions numériques définies par les partenaires.
+
+La plateforme intègre un système d'abonnements VIP, un portefeuille électronique interne, un programme de parrainage et une interface d'administration complète.
+
+Les abonnements VIP donnent accès à différentes catégories de missions et à des plafonds de rémunération plus élevés. Ils ne garantissent aucun revenu.
+
+## 1.2. Objectifs
+
+Développer une application web complète permettant :
+
+1. L'inscription et l'authentification des utilisateurs.
+2. La souscription à des abonnements VIP valables 90 jours.
+3. La publication et la gestion des campagnes partenaires.
+4. L'attribution de 10 tâches maximum par worker et par jour.
+5. La validation des tâches réalisées.
+6. Le calcul automatique des rémunérations.
+7. La gestion des commissions de parrainage.
+8. La gestion des portefeuilles et des demandes de retrait.
+9. Le suivi des recettes, dépenses et marges.
+10. L'administration centralisée de l'ensemble de la plateforme.
+
+## 1.3. Règles fondamentales
+
+- Une tâche doit correspondre à une prestation réelle.
+- Une tâche doit disposer d'un financement confirmé avant attribution.
+- Les gains ne sont crédités qu'après validation.
+- Les abonnements ne garantissent ni disponibilité des tâches ni revenus.
+- Les rémunérations ne doivent pas dépendre du recrutement de nouveaux abonnés.
+- Les engagements artificiels interdits par les plateformes tierces ne doivent pas être proposés.
+- L'ensemble des opérations financières doit être traçable et auditable.
+
+---
+
+# 2. CONTRAINTES TECHNIQUES OBLIGATOIRES
+
+## 2.1. Stack technologique
+
+| Composant | Technologie |
+|---|---|
+| Backend | Laravel, version stable compatible |
+| Langage | PHP 8.3+ |
+| Frontend | Laravel Blade |
+| Styles | Tailwind CSS |
+| JavaScript | JavaScript natif |
+| Base de données | PostgreSQL |
+| Authentification | Laravel Auth |
+| Autorisations | Policies, Gates et Middleware |
+| Files d'attente | Laravel Queues |
+| Tâches planifiées | Laravel Scheduler |
+| Cache | Redis, si disponible |
+| Graphiques | ApexCharts |
+| Notifications | Laravel Notifications |
+| Emails | Laravel Mail |
+| API | REST JSON pour intégrations externes |
+
+## 2.2. Interdictions absolues
+
+Ne pas utiliser :
+
+- Livewire
+- Inertia.js
+- Vue.js
+- React
+- Angular
+- Alpine.js
+- Filament
+- Backpack ou autre panneau d'administration préconstruit
+- SPA ou architecture frontend séparée
+
+**Toutes les interfaces doivent être développées avec Laravel Blade.**
+
+Les interactions dynamiques devront être réalisées avec JavaScript natif et Fetch API, en communiquant avec des contrôleurs Laravel qui retournent du JSON.
+
+Le projet doit rester une application Laravel monolithique, organisée, maintenable et facilement déployable.
+
+## 2.3. Architecture
+
+Respecter une architecture MVC enrichie :
+
+```text
+app/
+├── Actions/
+├── Enums/
+├── Events/
+├── Exceptions/
+├── Http/
+│   ├── Controllers/
+│   │   ├── Admin/
+│   │   ├── Auth/
+│   │   ├── Partner/
+│   │   └── Worker/
+│   ├── Middleware/
+│   ├── Requests/
+│   └── Resources/
+├── Jobs/
+├── Listeners/
+├── Models/
+├── Notifications/
+├── Policies/
+├── Services/
+│   ├── SubscriptionService.php
+│   ├── CampaignService.php
+│   ├── TaskAssignmentService.php
+│   ├── TaskValidationService.php
+│   ├── EarningsService.php
+│   ├── WalletService.php
+│   ├── ReferralService.php
+│   ├── WithdrawalService.php
+│   └── PaymentService.php
+└── Support/
+
+resources/
+├── views/
+│   ├── layouts/
+│   ├── components/
+│   ├── auth/
+│   ├── worker/
+│   ├── partner/
+│   └── admin/
+├── css/
+└── js/
+
+routes/
+├── web.php
+├── admin.php
+├── worker.php
+├── partner.php
+└── api.php
+```
+
+Les règles métier doivent être implémentées dans des services et non directement dans les contrôleurs ou les vues Blade.
+
+---
+
+# 3. GESTION DES UTILISATEURS
+
+## 3.1. Types de comptes
+
+### Worker
+
+Utilisateur chargé d'exécuter les missions rémunérées.
+
+### Partenaire
+
+Entreprise ou organisation proposant des campagnes financées.
+
+### Administrateur
+
+Responsable de la gestion de la plateforme.
+
+Prévoir également des rôles administratifs spécialisés : super-administrateur, gestionnaire financier, gestionnaire de campagnes et agent de support.
+
+## 3.2. Inscription des workers
+
+Champs requis :
+
+- Nom
+- Prénoms
+- Adresse email
+- Numéro de téléphone
+- Mot de passe
+- Confirmation du mot de passe
+- Code de parrainage facultatif
+- Acceptation des conditions générales
+
+Fonctionnalités :
+
+- Vérification de l'adresse email.
+- Vérification du téléphone lorsque le service SMS est disponible.
+- Protection contre les inscriptions automatisées.
+- Détection des comptes multiples suspects.
+- Réinitialisation du mot de passe.
+- Suspension et réactivation du compte.
+- Historique des connexions.
+- Gestion des sessions actives.
+
+Chaque utilisateur possède un identifiant unique et un code de parrainage permanent.
+
+---
+
+# 4. SYSTÈME D'ABONNEMENTS VIP
+
+## 4.1. Niveaux initiaux
+
+| Niveau | Prix | Plafond journalier | Valeur indicative par tâche |
+|---|---:|---:|---:|
+| Gratuit | 0 F | 100 F | 10 F |
+| VIP 1 | 1 000 F | 200 F | 20 F |
+| VIP 2 | 5 000 F | 500 F | 50 F |
+| VIP 3 | 10 000 F | 1 000 F | 100 F |
+| VIP 4 | 25 000 F | 2 000 F | 200 F |
+| VIP 5 | 50 000 F | 3 500 F | 350 F |
+| VIP 6 | 100 000 F | 6 000 F | 600 F |
+| VIP 7 | 250 000 F | 12 000 F | 1 200 F |
+
+**Important :** ces rémunérations sont des paramètres initiaux à valider commercialement. La valeur réelle d'une tâche dépend de son financement et de son type. Une tâche identique ne doit pas être rémunérée différemment uniquement en fonction du niveau acheté.
+
+## 4.2. Durée des abonnements
+
+- Durée standard : 90 jours calendaires.
+- Date de début : activation après confirmation du paiement.
+- Date de fin : date d'activation + 90 jours.
+- Renouvellement : manuel par défaut.
+- Expiration : automatique.
+- Retour au niveau gratuit après expiration.
+- Conservation des gains déjà acquis.
+- Conservation de l'historique des abonnements.
+
+## 4.3. Fonctionnalités
+
+Le worker doit pouvoir :
+
+- Consulter les abonnements disponibles.
+- Comparer les avantages.
+- Souscrire à un niveau.
+- Payer son abonnement.
+- Voir sa date d'expiration.
+- Consulter l'historique des paiements.
+- Renouveler son abonnement.
+- Demander un changement de niveau.
+
+Les règles de changement de niveau, de proratisation et de remboursement doivent être configurables.
+
+## 4.4. Administration des VIP
+
+L'administrateur peut :
+
+- Créer un niveau.
+- Modifier son prix.
+- Modifier sa durée.
+- Modifier son plafond journalier.
+- Définir les catégories de tâches accessibles.
+- Définir le nombre maximal de tâches.
+- Activer ou désactiver un niveau.
+- Modifier les avantages proposés.
+
+Toute modification doit être historisée et ne doit pas modifier rétroactivement les droits contractuels des abonnements déjà actifs.
+
+---
+
+# 5. GESTION DES CAMPAGNES PARTENAIRES
+
+## 5.1. Création d'une campagne
+
+Les partenaires doivent pouvoir créer des campagnes contenant :
+
+- Titre.
+- Description.
+- Catégorie.
+- URL cible, si nécessaire.
+- Instructions.
+- Critères de validation.
+- Preuve demandée.
+- Nombre de tâches commandées.
+- Budget total.
+- Rémunération par tâche.
+- Dates de début et de fin.
+- Niveau de qualification requis.
+- Nombre maximal de participants.
+- Conditions géographiques éventuelles.
+
+## 5.2. Catégories de missions
+
+Prévoir notamment :
+
+- Visite et test de site.
+- Test de parcours utilisateur.
+- Évaluation de produit.
+- Questionnaire.
+- Vérification d'informations.
+- Test d'application.
+- Retour d'expérience.
+- Mission personnalisée.
+
+Les actions de type like, abonnement social ou engagement public doivent être autorisées uniquement lorsqu'elles respectent les règles des services concernés et ne constituent pas une manipulation artificielle des indicateurs.
+
+## 5.3. Cycle de vie d'une campagne
+
+```text
+Brouillon
+   ↓
+Soumise
+   ↓
+Vérification administrative
+   ↓
+Approuvée
+   ↓
+Paiement / financement confirmé
+   ↓
+Active
+   ↓
+Attribution des tâches
+   ↓
+Validation des résultats
+   ↓
+Terminée
+```
+
+États supplémentaires : rejetée, suspendue, annulée, expirée.
+
+## 5.4. Financement
+
+Une campagne ne peut devenir active que si son budget disponible couvre les tâches à attribuer et les commissions associées.
+
+Le système doit réserver le budget nécessaire lors de l'attribution et libérer les montants inutilisés lorsque cela est justifié.
+
+Aucune mission ne doit être rémunérée avec un financement non confirmé.
+
+---
+
+# 6. SYSTÈME DE TÂCHES
+
+## 6.1. Règles générales
+
+Chaque worker peut réaliser au maximum 10 tâches rémunérées par jour.
+
+Le nombre maximal doit être configurable depuis l'administration.
+
+Le système doit tenir compte :
+
+- Du niveau VIP.
+- Des qualifications du worker.
+- Des campagnes disponibles.
+- Des budgets restants.
+- Des tâches déjà effectuées.
+- Des limites quotidiennes.
+- Des restrictions de campagne.
+- Des éventuelles sanctions du compte.
+
+Le compteur quotidien est réinitialisé à minuit selon le fuseau horaire `Africa/Abidjan`.
+
+## 6.2. Attribution
+
+Le système doit :
+
+1. Identifier les campagnes éligibles.
+2. Vérifier le financement.
+3. Vérifier les qualifications du worker.
+4. Vérifier sa limite quotidienne.
+5. Réserver une tâche.
+6. Afficher les instructions.
+7. Enregistrer l'attribution.
+
+Une tâche ne doit pas être attribuée deux fois au même worker lorsque la campagne interdit les répétitions.
+
+Utiliser des transactions SQL et des mécanismes de verrouillage pour éviter la sur-attribution.
+
+## 6.3. Exécution
+
+Le worker accède à une page contenant :
+
+- Titre de la mission.
+- Description.
+- Instructions.
+- Rémunération.
+- Délai de réalisation.
+- Bouton de démarrage.
+- Lien de destination.
+- Formulaire de preuve.
+- Bouton de soumission.
+
+## 6.4. Validation
+
+Statuts :
+
+```text
+available
+assigned
+in_progress
+submitted
+under_review
+approved
+rejected
+expired
+disputed
+```
+
+Les preuves peuvent être :
+
+- Réponse textuelle.
+- Capture d'écran.
+- Questionnaire.
+- Données de test.
+- Validation technique par API autorisée.
+- Contrôle manuel.
+
+Une simple ouverture de lien ne constitue pas automatiquement une preuve de prestation.
+
+Prévoir un système de contestation des rejets.
+
+## 6.5. Calcul des gains
+
+Formule indicative :
+
+```text
+Plafond par tâche = Plafond journalier / 10
+
+Gain réel = Montant contractuel de la tâche validée
+```
+
+Le montant réel doit respecter les limites applicables au worker et à la campagne.
+
+Exemple :
+
+```text
+Niveau : VIP 3
+Plafond journalier : 1 000 FCFA
+Nombre de tâches : 10
+
+Tâches validées : 7
+Valeur unitaire : 100 FCFA
+
+Gain : 700 FCFA
+```
+
+Le montant doit être calculé côté serveur. Le frontend ne doit jamais déterminer les gains.
+
+---
+
+# 7. PORTEFEUILLE ÉLECTRONIQUE INTERNE
+
+## 7.1. Présentation
+
+Chaque worker dispose d'un portefeuille interne permettant de suivre ses rémunérations.
+
+Afficher :
+
+- Solde disponible.
+- Gains en attente.
+- Gains cumulés.
+- Retraits en attente.
+- Retraits effectués.
+- Historique des mouvements.
+
+Ce portefeuille représente un registre comptable interne des sommes dues. Il ne doit pas être conçu comme un service autonome de conservation de fonds ou de transfert entre utilisateurs sans validation réglementaire.
+
+## 7.2. Transactions
+
+Types :
+
+```text
+task_earning
+referral_bonus
+withdrawal
+withdrawal_refund
+adjustment
+reversal
+```
+
+Chaque transaction possède :
+
+- Identifiant unique.
+- Utilisateur.
+- Montant.
+- Devise.
+- Type.
+- Référence métier.
+- Statut.
+- Date.
+- Description.
+
+## 7.3. Intégrité financière
+
+Implémenter un registre comptable à double entrée ou un mécanisme équivalent garantissant la réconciliation.
+
+Exigences :
+
+- Transactions immuables.
+- Corrections par contre-écriture.
+- Protection contre le double crédit.
+- Clés d'idempotence.
+- Verrouillage lors des opérations critiques.
+- Montants enregistrés en entiers XOF.
+- Interdiction des soldes négatifs non autorisés.
+- Journal d'audit.
+
+---
+
+# 8. SYSTÈME DE PARRAINAGE
+
+## 8.1. Fonctionnement
+
+Chaque worker possède un code de parrainage unique.
+
+Lorsqu'un filleul réalise une tâche validée, son parrain peut percevoir une commission équivalente à 10 % du gain éligible.
+
+Exemple :
+
+```text
+Gain du filleul : 1 000 FCFA
+Commission parrain : 100 FCFA
+```
+
+La commission ne doit pas être prélevée sur la rémunération du filleul.
+
+## 8.2. Conditions
+
+- Un seul niveau de parrainage.
+- Aucun gain pour une simple inscription.
+- Aucune commission sur l'achat d'abonnements.
+- Commission uniquement sur les missions financées et validées.
+- Commission prévue dans le budget commercial.
+- Prévention de l'auto-parrainage.
+- Détection des réseaux de comptes frauduleux.
+- Annulation comptable en cas de fraude confirmée.
+
+## 8.3. Interface parrainage
+
+Afficher :
+
+- Code personnel.
+- Lien d'invitation.
+- Nombre de filleuls.
+- Filleuls actifs.
+- Commissions cumulées.
+- Commissions en attente.
+- Historique des commissions.
+
+---
+
+# 9. GESTION DES PAIEMENTS
+
+## 9.1. Moyens de paiement
+
+Prévoir une architecture modulaire permettant d'intégrer des prestataires compatibles avec :
+
+- Wave.
+- Orange Money.
+- MTN Mobile Money.
+- Autres moyens proposés par les agrégateurs retenus.
+
+Ne pas supposer qu'une API directe existe pour chaque opérateur.
+
+## 9.2. Paiement des abonnements
+
+Étapes :
+
+1. Sélection du niveau.
+2. Création d'une commande.
+3. Choix du moyen de paiement.
+4. Initialisation auprès du prestataire.
+5. Confirmation serveur à serveur.
+6. Vérification du montant et de la référence.
+7. Activation de l'abonnement.
+8. Génération du reçu.
+
+Ne jamais activer un abonnement uniquement à partir d'une redirection navigateur indiquant un paiement réussi.
+
+## 9.3. Retraits
+
+Le worker doit pouvoir :
+
+- Choisir un moyen de retrait.
+- Renseigner un compte bénéficiaire.
+- Indiquer le montant.
+- Consulter les frais.
+- Confirmer sa demande.
+- Suivre son statut.
+
+Statuts :
+
+```text
+pending
+under_review
+approved
+processing
+completed
+failed
+rejected
+cancelled
+```
+
+Le système doit empêcher les demandes dépassant le solde disponible.
+
+Prévoir un seuil minimal de retrait configurable, des contrôles antifraude, un mécanisme de remboursement comptable en cas d'échec et une réconciliation avec le prestataire.
+
+---
+
+# 10. INTERFACE WORKER
+
+## 10.1. Tableau de bord
+
+Afficher :
+
+- Message de bienvenue.
+- Niveau VIP actuel.
+- Date d'expiration.
+- Solde disponible.
+- Gains du jour.
+- Gains du mois.
+- Tâches réalisées aujourd'hui.
+- Tâches restantes.
+- Missions disponibles.
+- Statistiques de performance.
+- Notifications.
+
+## 10.2. Pages
+
+```text
+/dashboard
+/tasks
+/tasks/{id}
+/task-history
+/subscriptions
+/subscription-history
+/wallet
+/wallet/transactions
+/withdrawals
+/referrals
+/notifications
+/profile
+/security
+/support
+```
+
+## 10.3. Ergonomie
+
+L'interface doit être :
+
+- Responsive.
+- Mobile-first.
+- Rapide.
+- Moderne.
+- Simple à comprendre.
+- Adaptée aux utilisateurs peu expérimentés.
+- Optimisée pour les connexions mobiles.
+
+Prévoir un menu latéral sur ordinateur et une navigation mobile adaptée.
+
+---
+
+# 11. INTERFACE PARTENAIRE
+
+Le partenaire doit disposer d'un espace professionnel indépendant.
+
+## 11.1. Tableau de bord
+
+Indicateurs :
+
+- Campagnes actives.
+- Budget engagé.
+- Budget restant.
+- Tâches commandées.
+- Tâches réalisées.
+- Tâches validées.
+- Coût moyen par prestation.
+- Historique des campagnes.
+
+## 11.2. Fonctionnalités
+
+- Création de campagne.
+- Modification des brouillons.
+- Soumission à validation.
+- Financement des campagnes.
+- Consultation des résultats.
+- Validation de missions, selon les permissions.
+- Téléchargement des rapports.
+- Historique des paiements.
+- Gestion du profil de l'entreprise.
+- Contact du support.
+
+Prévoir l'export CSV et Excel des résultats autorisés.
+
+---
+
+# 12. PANNEAU D'ADMINISTRATION
+
+L'administration doit être développée intégralement en Blade.
+
+## 12.1. Tableau de bord général
+
+Afficher :
+
+- Nombre total de workers.
+- Workers actifs.
+- Abonnements actifs.
+- Répartition des VIP.
+- Chiffre d'affaires des abonnements.
+- Chiffre d'affaires des campagnes.
+- Rémunérations versées.
+- Commissions de parrainage.
+- Retraits effectués.
+- Retraits en attente.
+- Budget des campagnes.
+- Marge brute.
+- Charges d'exploitation.
+- Résultat estimé.
+
+Graphiques par jour, semaine, mois et trimestre.
+
+## 12.2. Gestion des utilisateurs
+
+- Liste et recherche.
+- Filtres.
+- Consultation des profils.
+- Suspension.
+- Réactivation.
+- Vérification d'identité si nécessaire.
+- Historique des activités.
+- Historique financier.
+- Export des données.
+
+## 12.3. Gestion des abonnements
+
+- CRUD des niveaux VIP.
+- Prix.
+- Durée.
+- Plafonds.
+- Catégories accessibles.
+- Souscriptions actives.
+- Expirations.
+- Renouvellements.
+- Historique des modifications.
+
+## 12.4. Gestion des campagnes
+
+- Validation.
+- Rejet motivé.
+- Suspension.
+- Consultation des budgets.
+- Suivi de l'exécution.
+- Vérification des preuves.
+- Traitement des contestations.
+
+## 12.5. Gestion financière
+
+- Recettes des abonnements.
+- Recettes des campagnes.
+- Dépenses de rémunération.
+- Commissions de parrainage.
+- Charges d'exploitation.
+- Demandes de retrait.
+- Réconciliation des paiements.
+- Rapports financiers.
+- Exports comptables.
+
+## 12.6. Paramètres globaux
+
+L'administrateur doit pouvoir configurer :
+
+- Nom et identité de la plateforme.
+- Logo et couleurs.
+- Devise.
+- Fuseau horaire.
+- Nombre maximal de tâches.
+- Durée des abonnements.
+- Commission de parrainage.
+- Frais de retrait.
+- Seuil minimal de retrait.
+- Notifications.
+- Maintenance.
+- Paramètres des prestataires de paiement.
+
+Les clés API et secrets ne doivent jamais être affichés en clair dans l'interface ni enregistrés sans protection adaptée.
+
+---
+
+# 13. MOTEUR FINANCIER ET RENTABILITÉ
+
+## 13.1. Objectif
+
+Permettre à l'administrateur de connaître la rentabilité réelle et prévisionnelle de la plateforme.
+
+## 13.2. Indicateurs
+
+Calculer :
+
+```text
+CA total =
+CA abonnements + CA campagnes
+
+Coût des missions =
+Somme des rémunérations validées
+
+Coût de parrainage =
+Somme des commissions acquises
+
+Marge brute campagnes =
+CA campagnes - coût des missions
+- coût de parrainage
+- coûts variables des campagnes
+
+Résultat opérationnel estimé =
+CA total - rémunérations
+- parrainage - charges d'exploitation
+- autres coûts applicables
+```
+
+Distinguer les encaissements, les revenus reconnus, les fonds réservés, les montants dus et les décaissements.
+
+## 13.3. Simulateur administratif
+
+Créer une interface permettant de simuler :
+
+- Nombre de workers par niveau.
+- Taux d'activité.
+- Taux de validation.
+- Nombre moyen de tâches quotidiennes.
+- Prix moyen des tâches.
+- Budget partenaire.
+- Taux de parrainage.
+- Frais opérationnels.
+- Résultat sur 30, 60 et 90 jours.
+
+Le simulateur doit afficher les scénarios optimiste, central et prudent.
+
+## 13.4. Alertes
+
+Déclencher des alertes lorsque :
+
+- Une campagne approche de l'épuisement de son budget.
+- Les obligations de paiement dépassent les fonds sécurisés.
+- Les demandes de retrait augmentent anormalement.
+- Un prestataire de paiement présente des anomalies.
+- Les marges deviennent négatives.
+- Une concentration excessive de workers dépend d'une seule campagne.
+
+---
+
+# 14. BASE DE DONNÉES
+
+Créer des migrations Laravel avec clés étrangères, index, contraintes et relations Eloquent.
+
+Tables principales :
+
+```text
+users
+roles
+user_roles
+worker_profiles
+partner_profiles
+
+subscription_plans
+user_subscriptions
+subscription_orders
+subscription_payments
+
+campaigns
+campaign_categories
+campaign_fundings
+campaign_budget_reservations
+
+tasks
+task_assignments
+task_submissions
+task_evidence
+task_reviews
+task_disputes
+
+wallets
+ledger_accounts
+ledger_entries
+wallet_transactions
+
+referrals
+referral_commissions
+
+withdrawal_requests
+payment_transactions
+payment_webhook_events
+
+notifications
+support_tickets
+support_messages
+
+system_settings
+audit_logs
+financial_expenses
+```
+
+## Exigences de modélisation
+
+- UUID ou identifiants robustes selon les besoins.
+- Clés étrangères.
+- Index sur les recherches fréquentes.
+- Contraintes d'unicité.
+- Dates de création et de modification.
+- Soft deletes lorsque pertinent.
+- Historique des opérations financières.
+- Protection contre les doublons.
+
+Ne pas utiliser les soft deletes pour effacer l'historique comptable.
+
+---
+
+# 15. SÉCURITÉ ET ANTIFRAUDE
+
+## 15.1. Sécurité applicative
+
+Implémenter :
+
+- Protection CSRF.
+- Validation serveur des formulaires.
+- Protection XSS.
+- Protection contre les injections SQL.
+- Limitation des tentatives de connexion.
+- Hachage sécurisé des mots de passe.
+- Vérification des autorisations.
+- Protection des uploads.
+- Journalisation des actions sensibles.
+- Authentification à deux facteurs pour l'administration.
+
+## 15.2. Antifraude
+
+Détecter notamment :
+
+- Comptes multiples suspects.
+- Soumissions répétitives.
+- Preuves identiques.
+- Tentatives de manipulation des gains.
+- Abus de parrainage.
+- Demandes de retrait anormales.
+- Activités automatisées interdites.
+- Collusion entre comptes.
+
+Ne pas sanctionner automatiquement un utilisateur sur la seule base d'une adresse IP commune.
+
+Prévoir une revue humaine et un historique des décisions.
+
+## 15.3. Sécurité financière
+
+Toutes les opérations sensibles doivent utiliser :
+
+- Transactions de base de données.
+- Verrouillage approprié.
+- Idempotence.
+- Vérification des signatures des webhooks.
+- Journalisation.
+- Réconciliation périodique.
+
+---
+
+# 16. NOTIFICATIONS
+
+Prévoir des notifications internes et email pour :
+
+- Bienvenue.
+- Vérification du compte.
+- Abonnement activé.
+- Abonnement bientôt expiré.
+- Abonnement expiré.
+- Nouvelle mission disponible.
+- Mission approuvée.
+- Mission rejetée.
+- Gain crédité.
+- Commission de parrainage.
+- Retrait demandé.
+- Retrait effectué.
+- Retrait rejeté.
+- Réponse du support.
+
+Les notifications doivent être traitées par files d'attente lorsque cela est pertinent.
+
+---
+
+# 17. DESIGN ET EXPÉRIENCE UTILISATEUR
+
+## 17.1. Direction artistique
+
+Créer un design SaaS professionnel avec :
+
+- Interface claire.
+- Cartes statistiques.
+- Tableaux modernes.
+- Icônes cohérentes.
+- Couleurs de statut.
+- Formulaires accessibles.
+- Graphiques interactifs.
+- Modales de confirmation.
+- Notifications toast.
+- États de chargement.
+- États vides.
+- Pagination.
+
+## 17.2. Composants Blade
+
+Créer des composants réutilisables :
+
+```text
+<x-layouts.worker>
+<x-layouts.admin>
+<x-layouts.partner>
+
+<x-ui.card>
+<x-ui.button>
+<x-ui.input>
+<x-ui.select>
+<x-ui.modal>
+<x-ui.alert>
+<x-ui.badge>
+<x-ui.table>
+<x-ui.pagination>
+<x-ui.stat-card>
+<x-ui.empty-state>
+```
+
+Les composants doivent rester de simples composants Blade.
+
+Aucune dépendance à Livewire, Alpine.js ou Inertia.js.
+
+---
+
+# 18. TÂCHES AUTOMATISÉES
+
+Configurer Laravel Scheduler pour :
+
+- Vérifier les expirations VIP.
+- Désactiver les abonnements expirés.
+- Mettre à jour les campagnes.
+- Expirer les attributions non réalisées.
+- Envoyer les notifications planifiées.
+- Détecter les anomalies financières.
+- Produire des rapports périodiques.
+- Réconcilier les paiements.
+- Nettoyer les données temporaires.
+
+Le quota quotidien doit être calculé de manière fiable à partir des attributions et validations, et non dépendre uniquement d'un compteur remis à zéro.
+
+---
+
+# 19. TESTS ET QUALITÉ
+
+Utiliser PHPUnit ou Pest.
+
+## Tests obligatoires
+
+- Inscription et connexion.
+- Autorisations par rôle.
+- Souscription VIP.
+- Activation après paiement confirmé.
+- Expiration après 90 jours.
+- Limite de 10 tâches.
+- Attribution concurrente.
+- Validation et rejet des tâches.
+- Calcul des rémunérations.
+- Calcul du parrainage.
+- Absence de double crédit.
+- Réservation du budget.
+- Demandes de retrait.
+- Absence de double retrait.
+- Réception répétée d'un webhook.
+- Échec d'un paiement.
+- Contrôle des accès administratifs.
+- Réconciliation comptable.
+
+Inclure des tests de concurrence sur les opérations financières.
+
+---
+
+# 20. DÉPLOIEMENT
+
+L'application doit pouvoir être déployée sur un VPS Linux avec :
+
+- PHP-FPM.
+- Nginx.
+- PostgreSQL.
+- Redis, si utilisé.
+- Supervisor pour les workers de queue.
+- Laravel Scheduler.
+- HTTPS.
+- Sauvegardes automatiques.
+- Rotation des logs.
+- Monitoring des erreurs.
+
+Prévoir une configuration Docker facultative pour faciliter le déploiement avec Coolify.
+
+Aucun secret ne doit être présent dans le dépôt Git.
+
+---
+
+# 21. PLAN DE DÉVELOPPEMENT
+
+## Phase 1 — Fondations
+
+- Initialisation Laravel.
+- Configuration PostgreSQL.
+- Authentification.
+- Gestion des rôles.
+- Layouts Blade.
+- Tableau de bord de base.
+- Migrations et modèles.
+
+## Phase 2 — Abonnements
+
+- Niveaux VIP.
+- Souscriptions.
+- Paiements.
+- Activation.
+- Expiration.
+- Historique.
+
+## Phase 3 — Campagnes et tâches
+
+- Espace partenaire.
+- Création des campagnes.
+- Validation administrative.
+- Financement.
+- Attribution des tâches.
+- Soumission des preuves.
+- Validation.
+
+## Phase 4 — Finances
+
+- Portefeuilles.
+- Registre comptable.
+- Calcul des gains.
+- Parrainage.
+- Retraits.
+- Réconciliation.
+
+## Phase 5 — Administration
+
+- Gestion des utilisateurs.
+- Gestion des campagnes.
+- Paramètres VIP.
+- Statistiques.
+- Rapports financiers.
+- Gestion du support.
+
+## Phase 6 — Sécurité et livraison
+
+- Tests automatisés.
+- Antifraude.
+- Optimisation.
+- Documentation.
+- Déploiement.
+- Vérification de production.
+
+---
+
+# 22. INSTRUCTIONS IMPÉRATIVES À L'IA DE DÉVELOPPEMENT
+
+Tu es un ingénieur logiciel senior spécialisé en Laravel, PostgreSQL, sécurité applicative et systèmes financiers.
+
+Ta mission consiste à développer cette plateforme conformément au présent cahier des charges.
+
+Respecte impérativement les règles suivantes :
+
+1. Utiliser exclusivement Laravel et Blade pour l'architecture web.
+2. Ne jamais installer Livewire, Inertia, Vue, React, Alpine.js ou Filament.
+3. Utiliser JavaScript natif et Fetch API pour les interactions asynchrones.
+4. Respecter les principes SOLID et DRY.
+5. Séparer contrôleurs, services, modèles, validations et autorisations.
+6. Développer des composants Blade réutilisables.
+7. Utiliser des Form Requests pour la validation.
+8. Utiliser des Policies et Middleware pour les autorisations.
+9. Ne jamais calculer les montants financiers dans le navigateur.
+10. Utiliser des transactions et protections contre les opérations concurrentes.
+11. Écrire les migrations, seeders, factories et tests nécessaires.
+12. Ne pas créer de fausses intégrations de paiement présentées comme fonctionnelles.
+13. Prévoir des adaptateurs de paiement et un mode sandbox.
+14. Ne jamais activer de gains sans prestation validée et financement confirmé.
+15. Documenter les fonctionnalités réalisées.
+16. Produire du code complet, pas uniquement des exemples.
+17. Ne pas laisser de fonctionnalités critiques sous forme de TODO.
+18. Ne pas inventer les règles métier manquantes : les signaler avant implémentation.
+19. Vérifier les contraintes de conformité avant d'activer les fonctions financières en production.
+20. Construire une application réellement exploitable, sécurisée et maintenable.
+
+## Méthode de travail obligatoire
+
+Avant de commencer le développement :
+
+- Analyser les exigences.
+- Identifier les ambiguïtés et dépendances.
+- Proposer le schéma de base de données.
+- Définir les routes.
+- Définir les permissions.
+- Définir les services métier.
+- Présenter les étapes d'implémentation.
+
+Ensuite, développer progressivement, module par module.
+
+Pour chaque module :
+
+1. Créer les migrations.
+2. Créer les modèles.
+3. Créer les services.
+4. Créer les contrôleurs.
+5. Créer les Form Requests.
+6. Créer les routes.
+7. Créer les vues Blade.
+8. Ajouter le JavaScript nécessaire.
+9. Écrire les tests.
+10. Vérifier le fonctionnement avant de poursuivre.
+
+## Critères de livraison
+
+Le projet est considéré comme terminé lorsque :
+
+- Les trois espaces sont fonctionnels.
+- Les abonnements VIP fonctionnent sur 90 jours.
+- Les tâches respectent les limites quotidiennes.
+- Les rémunérations sont correctement calculées.
+- Les commissions de parrainage sont traçables.
+- Les budgets des campagnes sont protégés.
+- Les paiements et retraits fonctionnent avec les prestataires réellement configurés.
+- L'administration permet de piloter la plateforme.
+- Les tests critiques passent.
+- L'application est documentée et déployable.
+
+**Objectif final : livrer une plateforme SaaS de micro-tâches rémunérées, complète, responsive, sécurisée, administrable et développée exclusivement avec Laravel et Blade.**
+
+---
+
+# 23. POINTS À VALIDER AVANT MISE EN PRODUCTION
+
+Les éléments suivants nécessitent une décision explicite du porteur de projet :
+
+- Prix et rémunérations définitifs des niveaux VIP.
+- Conditions de passage d'un VIP à un autre.
+- Conditions de remboursement des abonnements.
+- Minimum de retrait et frais éventuels.
+- Délais de validation des missions.
+- Politique de contestation.
+- Conditions d'éligibilité au parrainage.
+- Prestataires de paiement retenus.
+- Politique de protection des données personnelles.
+- Validation juridique du système d'abonnement rémunéré.
+- Budget minimum exigé pour chaque campagne.
+- Modalités de facturation des partenaires.
+- Répartition de la commission commerciale de la plateforme.
+
+Aucune fonctionnalité dont les règles sont encore indéterminées ne doit être présentée comme définitivement validée.

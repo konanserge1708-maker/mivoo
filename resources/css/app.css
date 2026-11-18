@@ -1,0 +1,379 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+
+    --color-mivoo-ink: #14131a;
+    --color-mivoo-muted: #6f6a7d;
+    --color-mivoo-lavender: #ebe6f5;
+    --color-mivoo-lilac: #d9d0ea;
+    --color-mivoo-violet: #6b5c9e;
+    --color-mivoo-violet-deep: #53457f;
+    --color-mivoo-peach: #efc7a8;
+    --color-mivoo-sky: #c9daf5;
+    --color-mivoo-blue: #2563eb;
+    --color-mivoo-surface: #ffffff;
+    --color-mivoo-soft: #f4f1f8;
+    --color-mivoo-danger: #e45757;
+    --color-mivoo-success: #2f9e6b;
+
+    --radius-mivoo: 1.75rem;
+    --radius-mivoo-sm: 1.15rem;
+    --shadow-mivoo: 0 18px 40px rgba(83, 69, 127, 0.08);
+    --shadow-nav: 0 14px 40px rgba(20, 19, 26, 0.16);
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply font-sans text-mivoo-ink antialiased;
+        background:
+            radial-gradient(circle at top left, rgba(239, 199, 168, 0.28), transparent 28%),
+            radial-gradient(circle at top right, rgba(107, 92, 158, 0.16), transparent 32%),
+            linear-gradient(180deg, #efeaf8 0%, #f7f4fb 42%, #f3eef9 100%);
+        min-height: 100vh;
+    }
+
+    ::selection {
+        background: color-mix(in oklab, var(--color-mivoo-violet) 30%, white);
+    }
+}
+
+@layer components {
+    .mivoo-shell {
+        @apply mx-auto w-full max-w-md px-4 pb-28 pt-6 sm:max-w-lg lg:max-w-6xl lg:px-8 lg:pb-10;
+    }
+
+    .mivoo-card {
+        @apply rounded-[1.75rem] bg-white/90 shadow-mivoo backdrop-blur-sm;
+    }
+
+    .mivoo-stat {
+        @apply rounded-[1.75rem] p-5 shadow-mivoo transition duration-300 ease-out;
+    }
+
+    .mivoo-stat:hover {
+        transform: translateY(-2px);
+    }
+
+    .mivoo-scroll-x {
+        @apply overflow-x-auto;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .mivoo-scroll-x::-webkit-scrollbar {
+        display: none;
+    }
+
+    .mivoo-chip {
+        @apply inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold transition;
+    }
+
+    .mivoo-chip-active {
+        @apply bg-mivoo-ink text-white;
+    }
+
+    .mivoo-chip-idle {
+        @apply bg-white/70 text-mivoo-muted hover:bg-white;
+    }
+
+    .mivoo-btn {
+        @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition duration-200;
+    }
+
+    .mivoo-btn-primary {
+        @apply bg-mivoo-ink text-white hover:bg-black;
+    }
+
+    .mivoo-btn-secondary {
+        @apply bg-white text-mivoo-ink shadow-sm hover:bg-mivoo-soft;
+    }
+
+    .mivoo-btn-violet {
+        @apply bg-mivoo-violet text-white hover:bg-mivoo-violet-deep;
+    }
+
+    .mivoo-input {
+        @apply w-full rounded-2xl border border-transparent bg-white px-4 py-3.5 text-sm text-mivoo-ink shadow-sm outline-none transition placeholder:text-mivoo-muted/70 focus:border-mivoo-violet/40 focus:ring-4 focus:ring-mivoo-violet/10;
+    }
+
+    .mivoo-label {
+        @apply mb-2 block text-sm font-medium text-mivoo-ink;
+    }
+
+    .mivoo-nav {
+        @apply fixed inset-x-4 bottom-4 z-40 mx-auto flex max-w-md items-center justify-between rounded-[2rem] bg-white/95 px-3 py-2 shadow-nav backdrop-blur-md lg:hidden;
+    }
+
+    .mivoo-nav-item {
+        @apply flex h-12 w-12 items-center justify-center rounded-full text-mivoo-muted transition;
+    }
+
+    .mivoo-nav-item.is-active {
+        @apply text-mivoo-violet;
+    }
+
+    .mivoo-nav-add {
+        @apply -mt-7 flex h-14 w-14 items-center justify-center rounded-full bg-mivoo-ink text-white shadow-lg;
+    }
+
+    .mivoo-icon-btn {
+        @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-mivoo-soft text-mivoo-ink transition duration-300 ease-out;
+    }
+
+    .mivoo-icon-btn:hover {
+        @apply bg-mivoo-ink text-white;
+        transform: translateX(2px) scale(1.08);
+        box-shadow: 0 10px 24px rgba(20, 19, 26, 0.18);
+    }
+
+    .mivoo-icon-btn:hover svg {
+        transform: translateX(2px);
+    }
+
+    .mivoo-icon-btn svg {
+        @apply transition duration-300 ease-out;
+    }
+
+    .mivoo-icon-btn:active {
+        transform: scale(0.96);
+    }
+
+    .mivoo-sidebar {
+        @apply hidden lg:flex lg:w-64 lg:flex-col lg:gap-2 lg:rounded-[2rem] lg:bg-white/80 lg:p-5 lg:shadow-mivoo;
+    }
+
+    .fade-up {
+        animation: fadeUp 0.55s ease both;
+    }
+
+    .fade-up-delay-1 { animation-delay: 0.08s; }
+    .fade-up-delay-2 { animation-delay: 0.16s; }
+    .fade-up-delay-3 { animation-delay: 0.24s; }
+    .fade-up-delay-4 { animation-delay: 0.32s; }
+
+    .vip-card {
+        @apply relative overflow-hidden rounded-[1.75rem] p-5 transition duration-300;
+        isolation: isolate;
+    }
+
+    .vip-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.35) 48%, transparent 62%);
+        transform: translateX(-120%);
+        transition: transform 0.7s ease;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .vip-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .vip-card:hover::before {
+        transform: translateX(120%);
+    }
+
+    .vip-card > * {
+        position: relative;
+        z-index: 2;
+    }
+
+    .vip-material {
+        @apply mb-3 inline-flex items-center rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em];
+    }
+
+    /* Gratuit — argent mat */
+    .vip-tone-free {
+        background: linear-gradient(160deg, #f3f4f6 0%, #e5e7eb 45%, #d1d5db 100%);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 14px 28px rgba(107, 114, 128, 0.18);
+        color: #374151;
+    }
+    .vip-tone-free .vip-material { background: rgba(55, 65, 81, 0.12); color: #4b5563; }
+    .vip-tone-free .vip-title,
+    .vip-tone-free .vip-price { color: #1f2937; }
+    .vip-tone-free .vip-muted { color: #4b5563; }
+
+    /* VIP 1 — bronze */
+    .vip-tone-1 {
+        background: linear-gradient(155deg, #f0d5b5 0%, #c8894a 48%, #8a5528 100%);
+        box-shadow: inset 0 1px 0 rgba(255, 230, 200, 0.55), 0 16px 30px rgba(138, 85, 40, 0.28);
+        color: #3b2412;
+    }
+    .vip-tone-1 .vip-material { background: rgba(59, 36, 18, 0.14); color: #5c3317; }
+    .vip-tone-1 .vip-title,
+    .vip-tone-1 .vip-price { color: #2a180c; }
+    .vip-tone-1 .vip-muted { color: rgba(42, 24, 12, 0.78); }
+
+    /* VIP 2 — bois */
+    .vip-tone-2 {
+        background:
+            repeating-linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0.04) 0 2px,
+                transparent 2px 7px
+            ),
+            linear-gradient(150deg, #d2a679 0%, #a86b3c 42%, #6f4124 100%);
+        box-shadow: inset 0 1px 0 rgba(255, 220, 180, 0.35), 0 16px 30px rgba(111, 65, 36, 0.28);
+        color: #2d1a0e;
+    }
+    .vip-tone-2 .vip-material { background: rgba(45, 26, 14, 0.16); color: #3f2414; }
+    .vip-tone-2 .vip-title,
+    .vip-tone-2 .vip-price { color: #211208; }
+    .vip-tone-2 .vip-muted { color: rgba(33, 18, 8, 0.8); }
+
+    /* VIP 3 — argent */
+    .vip-tone-3 {
+        background: linear-gradient(155deg, #ffffff 0%, #d8dee8 42%, #9aa6b8 100%);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 16px 30px rgba(100, 116, 139, 0.25);
+        color: #334155;
+    }
+    .vip-tone-3 .vip-material { background: rgba(51, 65, 85, 0.12); color: #475569; }
+    .vip-tone-3 .vip-title,
+    .vip-tone-3 .vip-price { color: #0f172a; }
+    .vip-tone-3 .vip-muted { color: #475569; }
+
+    /* VIP 4 — or */
+    .vip-tone-4 {
+        background: linear-gradient(155deg, #fff4c8 0%, #f0c14a 40%, #c8921a 78%, #8a650c 100%);
+        box-shadow: inset 0 1px 0 rgba(255, 248, 210, 0.7), 0 16px 32px rgba(184, 134, 11, 0.3);
+        color: #4a3204;
+    }
+    .vip-tone-4 .vip-material { background: rgba(74, 50, 4, 0.14); color: #6b4a0a; }
+    .vip-tone-4 .vip-title,
+    .vip-tone-4 .vip-price { color: #3b2803; }
+    .vip-tone-4 .vip-muted { color: rgba(59, 40, 3, 0.8); }
+
+    /* VIP 5 — platine */
+    .vip-tone-5 {
+        background: linear-gradient(155deg, #f8fafc 0%, #e2e8f0 38%, #cbd5e1 72%, #94a3b8 100%);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 16px 32px rgba(71, 85, 105, 0.22);
+        color: #1e293b;
+    }
+    .vip-tone-5 .vip-material { background: rgba(30, 41, 59, 0.1); color: #334155; }
+    .vip-tone-5 .vip-title,
+    .vip-tone-5 .vip-price { color: #0f172a; }
+    .vip-tone-5 .vip-muted { color: #475569; }
+
+    /* VIP 6 — diamant */
+    .vip-tone-6 {
+        background: linear-gradient(145deg, #eef9ff 0%, #c7e7ff 28%, #8ec5ff 58%, #5b8def 100%);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 18px 34px rgba(59, 130, 246, 0.28);
+        color: #0b3a75;
+    }
+    .vip-tone-6 .vip-material { background: rgba(11, 58, 117, 0.12); color: #1d4ed8; }
+    .vip-tone-6 .vip-title,
+    .vip-tone-6 .vip-price { color: #082f5c; }
+    .vip-tone-6 .vip-muted { color: rgba(8, 47, 92, 0.78); }
+
+    /* VIP 7 — diamant noir / prestige */
+    .vip-tone-7 {
+        background: linear-gradient(150deg, #2a2a2e 0%, #111114 45%, #0a0a0c 78%, #3a2f12 140%);
+        box-shadow: inset 0 1px 0 rgba(255, 215, 128, 0.2), 0 18px 36px rgba(0, 0, 0, 0.35);
+        color: #f8fafc;
+        border: 1px solid rgba(212, 175, 55, 0.35);
+    }
+    .vip-tone-7 .vip-material { background: rgba(212, 175, 55, 0.18); color: #f0d78c; }
+    .vip-tone-7 .vip-title,
+    .vip-tone-7 .vip-price { color: #fff8e7; }
+    .vip-tone-7 .vip-muted { color: rgba(248, 250, 252, 0.72); }
+
+    .mivoo-chart {
+        @apply w-full overflow-hidden;
+    }
+
+    .mivoo-chart-plot {
+        @apply grid w-full grid-cols-7 items-end gap-1 sm:gap-2;
+        height: clamp(9rem, 28vw, 11.5rem);
+    }
+
+    .mivoo-chart-col {
+        @apply flex h-full min-w-0 flex-col items-center justify-end gap-2;
+    }
+
+    .mivoo-chart-bars {
+        @apply flex w-full flex-1 items-end justify-center gap-1 overflow-hidden;
+        min-height: 0;
+    }
+
+    .chart-bar {
+        width: clamp(0.45rem, 2.2vw, 0.7rem);
+        height: var(--bar-h, 8%);
+        max-height: 100%;
+        border-radius: 0.55rem 0.55rem 0.2rem 0.2rem;
+        background: var(--color-mivoo-violet);
+        opacity: 0.85;
+        transform-origin: bottom center;
+        transform: scaleY(0);
+        animation: chartGrow 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        animation-delay: var(--bar-delay, 0ms);
+    }
+
+    .chart-bar-alt {
+        width: clamp(0.35rem, 1.8vw, 0.55rem);
+        opacity: 0.95;
+        background: repeating-linear-gradient(
+            -45deg,
+            color-mix(in oklab, var(--color-mivoo-violet) 55%, white),
+            color-mix(in oklab, var(--color-mivoo-violet) 55%, white) 3px,
+            color-mix(in oklab, var(--color-mivoo-lilac) 75%, white) 3px,
+            color-mix(in oklab, var(--color-mivoo-lilac) 75%, white) 6px
+        );
+    }
+
+    .mivoo-chart-col.is-active .chart-bar {
+        box-shadow: 0 8px 18px rgba(107, 92, 158, 0.28);
+        opacity: 1;
+    }
+
+    .mivoo-chart-label {
+        @apply text-[10px] font-semibold text-mivoo-muted sm:text-[11px];
+        animation: fadeUp 0.45s ease both;
+        animation-delay: calc(var(--bar-delay, 0ms) + 120ms);
+    }
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes chartGrow {
+    from {
+        transform: scaleY(0);
+        opacity: 0.35;
+    }
+    to {
+        transform: scaleY(1);
+        opacity: 0.9;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fade-up,
+    .mivoo-stat,
+    .chart-bar,
+    .mivoo-chart-label {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+        opacity: 1 !important;
+    }
+}
